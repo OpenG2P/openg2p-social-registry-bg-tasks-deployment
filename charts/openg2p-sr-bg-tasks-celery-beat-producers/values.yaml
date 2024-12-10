@@ -1,0 +1,289 @@
+global:
+  SRBGTasksHostname: ''
+
+nameOverride: openg2p-sr-bg-tasks-celery-beat-producers
+fullnameOverride: openg2p-sr-bg-tasks-celery-beat-producers
+
+## Pod extra labels
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+##
+podLabels:
+  app.kubernetes.io/name: openg2p-sr-bg-tasks-celery-beat-producers
+
+## Add labels to all the deployed resources
+##
+commonLabels:
+  app.kubernetes.io/group: openg2p-sr-bg-tasks
+
+## Add annotations to all the deployed resources
+##
+commonAnnotations: {}
+
+## Annotations for server pods.
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+##
+podAnnotations: {}
+
+replicaCount: 1
+
+## Update strategy - only really applicable for deployments with RWO PVs attached
+## If replicas = 1, an update can get "stuck", as the previous pod remains attached to the
+## PV, and the "incoming" pod can never start. Changing the strategy to "Recreate" will
+## terminate the single previous pod, so that the new, incoming pod can attach to the PV
+
+updateStrategy:
+  type: RollingUpdate
+
+
+## Specifies whether a ServiceAccount should be created
+##
+serviceAccount:
+  create: true
+  ## The name of the ServiceAccount to use.
+  ## If not set and create is true, a name is generated using the fullname template
+  ##
+  name: openg2p-sr-bg-tasks-celery-beat-producers
+
+image:
+  registry: docker.io
+  repository: openg2p/openg2p-openg2p-sr-celery-beat-producers
+  tag: 1.0.0
+  ## Specify a imagePullPolicy
+  ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+  ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+  ##
+  pullPolicy: Always
+  ## Optionally specify an array of imagePullSecrets.
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ##
+  # pullSecrets:
+  #   - myRegistryKeySecretName
+
+## Deployment pod host aliases
+## https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
+##
+hostAliases: []
+
+## Affinity for pod assignment. Evaluated as a template.
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}
+
+## Pod affinity preset
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+## Allowed values: soft, hard
+##
+podAffinityPreset: ""
+
+## Pod anti-affinity preset
+## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+## Allowed values: soft, hard
+##
+podAntiAffinityPreset: soft
+
+## Node affinity preset
+## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+## Allowed values: soft, hard
+##
+nodeAffinityPreset:
+  ## Node affinity type
+  ## Allowed values: soft, hard
+  ##
+  type: ""
+  ## Node label key to match
+  ## E.g.
+  ## key: "kubernetes.io/e2e-az-name"
+  ##
+  key: ""
+  ## Node label values to match
+  ## E.g.
+  ## values:
+  ##   - e2e-az1
+  ##   - e2e-az2
+  ##
+  values: []
+
+## Node labels for pod assignment. Evaluated as a template.
+## ref: https://kubernetes.io/docs/user-guide/node-selection/
+##
+nodeSelector: {}
+
+## Tolerations for pod assignment. Evaluated as a template.
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []
+
+##  pods' priority.
+## ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+##
+# priorityClassName: ""
+
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+##
+podSecurityContext:
+  enabled: false
+  fsGroup: 1001
+
+## Add init containers to the  pods.
+## Example:
+## initContainers:
+##   - name: your-image-name
+##     image: your-image
+##     imagePullPolicy: Always
+##     ports:
+##       - name: portname
+##         containerPort: 1234
+##
+initContainers: []
+
+## lifecycleHooks for the  container to automate configuration before or after startup.
+##
+lifecycleHooks: {}
+
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+## Clamav container already runs as 'mosip' user, so we may not need to enable this
+containerSecurityContext:
+  enabled: false
+  runAsUser: 1001
+  runAsNonRoot: true
+
+## Init containers parameters:
+## volumePermissions: Change the owner and group of the persistent volume mountpoint to runAsUser:fsGroup values from the securityContext section.
+##
+volumePermissions:
+  enabled: false
+  image:
+    registry: docker.io
+    repository: bitnami/bitnami-shell
+    tag: "10"
+    pullPolicy: Always
+    ## Optionally specify an array of imagePullSecrets.
+    ## Secrets must be manually created in the namespace.
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ##
+    pullSecrets: []
+    ##   - myRegistryKeySecretName
+  ## Init containers' resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ##
+  resources:
+    ## We usually recommend not to specify default resources and to leave this as a conscious
+    ## choice for the user. This also increases chances charts run on environments with little
+    ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+    ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    ##
+    limits: {}
+    ##   cpu: 100m
+    ##   memory: 128Mi
+    ##
+    requests: {}
+    ##   cpu: 100m
+    ##   memory: 128Mi
+    ##
+
+envVars:
+  SR_CELERY_BEAT_DB_DBNAME: socialregisrydb
+  SR_CELERY_BEAT_DB_PORT: 5432
+  SR_CELERY_BEAT_DB_USERNAME: socialregistryuser
+  SR_CELERY_BEAT_DB_HOSTNAME: 'localhost'
+  SR_CELERY_BEAT_CELERY_BROKER_URL: redis://{{ include "common.names.fullname" .Subcharts.redis }}-master:6379/0
+  SR_CELERY_BEAT_CELERY_BACKEND_URL: redis://{{ include "common.names.fullname" .Subcharts.redis }}-master:6379/0
+  SR_CELERY_BEAT_CELERY_MAX_ID_GENERATION_REQUEST_ATTEMPTS: 3
+  SR_CELERY_BEAT_CELERY_MAX_ID_GENERATION_UPDATE_ATTEMPTS: 3
+  SR_CELERY_BEAT_CELERY_RES_PARTNER_ID_GENERATION_FREQUENCY: 10
+  SR_CELERY_BEAT_CELERY_RES_PARTNER_ID_UPDATE_FREQUENCY: 10
+
+envVarsFrom:
+  SR_CELERY_BEAT_DB_PASSWORD:
+    secretKeyRef:
+      name: 'postgres-pod'
+      key: password
+
+g2pBridgeAPIPort: ""
+
+## ref: http://kubernetes.io/docs/user-guide/compute-postgresqlInstallationNameresources/
+##
+## We usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary.
+# resources:
+#   limits:
+#     cpu: 1000m
+#     memory: 500Mi
+#   requests:
+#     cpu: 200m
+#     memory: 200Mi
+resources: {}
+
+## Configure extra options for liveness and readiness probes
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+##
+startupProbe:
+  enabled: true
+  httpGet:
+    path: /ping
+    port: 8000
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 30
+  successThreshold: 1
+
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /ping
+    port: 8000
+  initialDelaySeconds: 20
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /ping
+    port: 8000
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+
+## Custom Rediness probes
+##
+customReadinessProbe: {}
+
+## Custom Liveness probes for
+##
+customLivenessProbe: {}
+
+## Add sidecars to the  pods.
+## Example:
+## sidecars:
+##   - name: your-image-name
+##     image: your-image
+##     imagePullPolicy: Always
+##     ports:
+##       - name: portname
+##         containerPort: 1234
+##
+sidecars: []
+
+postgresCheckerInit:
+  enabled: true
+  image: jbergknoff/postgresql-client
+  command:
+  - 'sh'
+  - '-c'
+  - 'until pg_isready -U ${SR_CELERY_BEAT_DB_USERNAME} -h ${SR_CELERY_BEAT_DB_HOSTNAME} -p ${SR_CELERY_BEAT_DB_PORT:-5432} -d ${SR_CELERY_BEAT_DB_DBNAME:-socialregistrydb}; do sleep 3; done'
+
+redis:
+  cluster:
+    enabled: false
+  replicaCount: 1
+  auth:
+    enabled: false
