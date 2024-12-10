@@ -1,0 +1,71 @@
+global:
+  SRBGTasksHostname: sr-bg-tasks.demo.openg2p.net
+
+openg2p-sr-bg-tasks-celery-beat-producers:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: openg2p/openg2p-sr-celery-beat-producers
+    tag: '1.0.0'
+  common:
+    enabled: false
+  redis:
+    enabled: false
+  envVars:
+    SR_CELERY_BEAT_DB_DBNAME: socialregistrydb
+    SR_CELERY_BEAT_DB_PORT: 5432
+    SR_CELERY_BEAT_DB_USERNAME: socialregistryuser
+    SR_CELERY_BEAT_DB_HOSTNAME: 'localhost'
+    SR_CELERY_BEAT_CELERY_BROKER_URL: redis://{{ .Release.Name }}-redis-master:6379/0
+    SR_CELERY_BEAT_CELERY_BACKEND_URL: redis://{{ .Release.Name }}-redis-master:6379/0
+    SR_CELERY_BEAT_MAX_ID_GENERATION_REQUEST_ATTEMPTS: 3
+    SR_CELERY_BEAT_MAX_ID_GENERATION_UPDATE_ATTEMPTS: 3
+    SR_CELERY_BEAT_RES_PARTNER_ID_GENERATION_FREQUENCY: 60
+    SR_CELERY_BEAT_RES_PARTNER_ID_UPDATE_FREQUENCY: 60
+
+  envVarsFrom:
+    SR_CELERY_BEAT_DB_PASSWORD:
+      secretKeyRef:
+        name: 'social-registry-postgresql'
+        key: password
+
+openg2p-sr-bg-tasks-celery-workers:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: openg2p/openg2p-sr-celery-workers
+    tag: '1.0.0'
+  common:
+    enabled: false
+  redis:
+    enabled: false
+  envVars:
+    SR_CELERY_WORKERS_DB_DBNAME: socialregistrydb
+    SR_CELERY_WORKERS_DB_USERNAME: socialregistryuser
+    SR_CELERY_WORKERS_DB_HOSTNAME: 'localhost'
+    SR_CELERY_WORKERS_DB_PORT: 5432
+    SR_CELERY_WORKERS_CELERY_BROKER_URL: redis://{{ .Release.Name }}-redis-master:6379/0
+    SR_CELERY_WORKERS_CELERY_BACKEND_URL: redis://{{ .Release.Name }}-redis-master:6379/0
+    SR_CELERY_WORKERS_AUTH_URL: https://keycloak.openg2p.org/realms/master/protocol/openid-connect/token
+    SR_CELERY_WORKERS_AUTH_CLIENT_ID: openg2p-sr-client
+    SR_CELERY_WORKERS_AUTH_CLIENT_SECRET: "secret"
+    SR_CELERY_WORKERS_AUTH_GRANT_TYPE: client_credentials
+    SR_CELERY_WORKERS_MOSIP_GET_UIN_URL: https://idgenerator.loadtest.openg2p.org/v1/idgenerator/uin
+    SR_CELERY_WORKERS_MOSIP_UPDATE_UIN_URL: https://idgenerator.loadtest.openg2p.org/v1/idgenerator/uin
+    SR_CELERY_WORKERS_MAX_ID_GENERATION_REQUEST_ATTEMPTS: 3
+    SR_CELERY_WORKERS_MAX_ID_GENERATION_UPDATE_ATTEMPTS: 3
+
+  envVarsFrom:
+    SR_CELERY_WORKERS_DB_PASSWORD:
+      secretKeyRef:
+        name: 'social-registry-postgresql'
+        key: password
+
+redis:
+  enabled: true
+  architecture: standalone
+  master:
+    persistence:
+      enabled: false
+  auth:
+    enabled: false
