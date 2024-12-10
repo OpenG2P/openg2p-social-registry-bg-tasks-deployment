@@ -13,3 +13,21 @@ questions:
   description: Install SR BG Celery Workers
   type: boolean
   label: SR BG Celery Workers
+
+- variable: global.keycloakBaseUrl
+  description: KeyCloak Base URL
+  type: string
+  label: KeyCloak Client Base Url
+  group: KeyCloak Settings
+
+- variable: openg2p-sr-bg-tasks-celery-workers.envVars.SR_CELERY_WORKERS_AUTH_CLIENT_ID
+  description: KeyCloak Client ID
+  type: string
+  label: KeyCloak Client ID
+  group: KeyCloak Settings
+
+- variable: openg2p-sr-bg-tasks-celery-workers.envVars.SR_CELERY_WORKERS_AUTH_CLIENT_SECRET
+  description: KeyCloak Client Secret for SR Celery Worker
+  type: string
+  label: KeyCloak Client Secret
+  group: KeyCloak Settings
