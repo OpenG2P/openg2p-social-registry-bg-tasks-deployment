@@ -6,6 +6,11 @@ on:
       - develop
       - main
   workflow_dispatch:
+    inputs:
+      forcePublishCharts:
+        description: "Force publish Charts?"
+        default: "*"
+        type: string
 
 
 jobs:
