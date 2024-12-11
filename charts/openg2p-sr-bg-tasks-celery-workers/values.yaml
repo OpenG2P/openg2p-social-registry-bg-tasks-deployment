@@ -292,7 +292,6 @@ postgresCheckerInit:
       sleep 3;
     done
 
-
 redis:
   cluster:
     enabled: false
