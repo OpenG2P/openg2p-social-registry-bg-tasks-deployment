@@ -8,7 +8,7 @@ openg2p-sr-bg-tasks-celery-beat-producers:
   image:
     registry: docker.io
     repository: openg2p/openg2p-sr-celery-beat-producers
-    tag: '1.0.0'
+    tag: '1.0.1'
   common:
     enabled: false
   redis:
@@ -36,7 +36,7 @@ openg2p-sr-bg-tasks-celery-workers:
   image:
     registry: docker.io
     repository: openg2p/openg2p-sr-celery-workers
-    tag: '1.0.0'
+    tag: '1.0.1'
   common:
     enabled: false
   redis:
