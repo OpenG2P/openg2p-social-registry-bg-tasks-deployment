@@ -2,7 +2,7 @@ apiVersion: v2
 name: openg2p-sr-bg-tasks-celery-beat-producers
 description: A Helm chart for OpenG2P SR Celery Beat Producers
 type: application
-version: 1.0.0
+version: 1.0.1
 appVersion: ""
 dependencies:
 - name: common
