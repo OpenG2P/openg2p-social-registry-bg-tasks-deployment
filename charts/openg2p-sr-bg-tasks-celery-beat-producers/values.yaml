@@ -287,3 +287,4 @@ redis:
   replicaCount: 1
   auth:
     enabled: false
+

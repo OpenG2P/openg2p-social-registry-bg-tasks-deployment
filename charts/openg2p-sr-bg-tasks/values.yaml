@@ -71,3 +71,4 @@ redis:
       enabled: false
   auth:
     enabled: false
+
