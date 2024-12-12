@@ -2,16 +2,12 @@ apiVersion: v2
 name: openg2p-sr-bg-tasks-celery-beat-producers
 description: A Helm chart for OpenG2P SR Celery Beat Producers
 type: application
-version: 1.0.1
+version: 1.0.0-develop
 appVersion: ""
 dependencies:
 - name: common
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 2.x.x
-- name: redis
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 20.x.x
-  condition: redis.enabled
 keywords:
   - openg2p-sr-bg-tasks-celery-beat-producers
 maintainers:
