@@ -2,7 +2,7 @@ apiVersion: v2
 name: openg2p-sr-bg-tasks-celery-workers
 description: A Helm chart for OpenG2P SR Celery Workers
 type: application
-version: 1.0.0-develop
+version: 1.0.2
 appVersion: ""
 dependencies:
 - name: common
