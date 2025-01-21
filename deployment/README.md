@@ -1,1 +1,1 @@
-## OpenG2P SR BG Tasks Deployment
+## OpenG2P Registry BG Tasks Deployment
