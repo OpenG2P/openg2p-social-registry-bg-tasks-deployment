@@ -1,9 +1,4 @@
 questions:
-- variable: global.SRBGTasksHostname
-  description: Hostname under which all SR BG Task services will be accessed
-  type: string
-  label: G2P SR BG Tasks Hostname
-
 - variable: openg2p-sr-bg-celery-beat-producers.enabled
   description: Install SR BG Celery Beat Producers
   type: boolean

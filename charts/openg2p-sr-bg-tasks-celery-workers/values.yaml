@@ -1,19 +1,11 @@
-global:
-  SRBGTasksHostname: ''
-
-nameOverride: openg2p-sr-bg-tasks-celery-workers
-fullnameOverride: openg2p-sr-bg-tasks-celery-workers
-
 ## Pod extra labels
 ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 ##
-podLabels:
-  app.kubernetes.io/name: openg2p-sr-bg-tasks-celery-workers
+podLabels: {}
 
 ## Add labels to all the deployed resources
 ##
-commonLabels:
-  app.kubernetes.io/group: openg2p-sr-bg-tasks
+commonLabels: {}
 
 ## Add annotations to all the deployed resources
 ##
@@ -42,12 +34,12 @@ serviceAccount:
   ## The name of the ServiceAccount to use.
   ## If not set and create is true, a name is generated using the fullname template
   ##
-  name: sr-celery-workers
+  name: ''
 
 image:
   registry: docker.io
   repository: openg2p/openg2p-sr-celery-workers
-  tag: 1.0.1
+  tag: "1.0.2"
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -183,28 +175,29 @@ volumePermissions:
     ##
 
 envVars:
-  SR_CELERY_WORKERS_DB_DBNAME: socialregistrydb
-  SR_CELERY_WORKERS_DB_USERNAME: socialregistryuser
   SR_CELERY_WORKERS_DB_HOSTNAME: localhost
   SR_CELERY_WORKERS_DB_PORT: 5432
-  SR_CELERY_WORKERS_CELERY_BROKER_URL: redis://{{ include "common.names.fullname" .Subcharts.redis }}-master:6379/0
-  SR_CELERY_WORKERS_CELERY_BACKEND_URL: redis://{{ include "common.names.fullname" .Subcharts.redis }}-master:6379/0
+  SR_CELERY_WORKERS_DB_DBNAME: socialregistrydb
+  SR_CELERY_WORKERS_DB_USERNAME: socialregistryuser
+
+  SR_CELERY_WORKERS_CELERY_BROKER_URL: redis://redis:6379/0
+  SR_CELERY_WORKERS_CELERY_BACKEND_URL: redis://redis:6379/0
+
   SR_CELERY_WORKERS_AUTH_URL: https://keycloak.openg2p.net/realms/master/protocol/openid-connect/token
   SR_CELERY_WORKERS_AUTH_CLIENT_ID: openg2p-sr-client
   SR_CELERY_WORKERS_AUTH_CLIENT_SECRET: ""
-  SR_CELERY_WORKERS_AUTH_GRANT_TYPE: client_credentials
+
   SR_CELERY_WORKERS_MOSIP_GET_UIN_URL: https://idgenerator.sandbox.openg2p.net/v1/idgenerator/uin
   SR_CELERY_WORKERS_MOSIP_UPDATE_UIN_URL: https://idgenerator.sandbox.openg2p.net/v1/idgenerator/uin
+
   SR_CELERY_WORKERS_MAX_ID_GENERATION_REQUEST_ATTEMPTS: 3
   SR_CELERY_WORKERS_MAX_ID_GENERATION_UPDATE_ATTEMPTS: 3
 
 envVarsFrom:
   SR_CELERY_WORKERS_DB_PASSWORD:
     secretKeyRef:
-      name: 'postgres-pod'
+      name: 'social-registry-postgresql'
       key: password
-
-g2pBridgeAPIPort: ""
 
 ## ref: http://kubernetes.io/docs/user-guide/compute-postgresqlInstallationNameresources/
 ##
@@ -225,7 +218,7 @@ resources: {}
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
 ##
 startupProbe:
-  enabled: true
+  enabled: false
   httpGet:
     path: /ping
     port: 8000
@@ -236,7 +229,7 @@ startupProbe:
   successThreshold: 1
 
 livenessProbe:
-  enabled: true
+  enabled: false
   httpGet:
     path: /ping
     port: 8000
@@ -247,7 +240,7 @@ livenessProbe:
   successThreshold: 1
 
 readinessProbe:
-  enabled: true
+  enabled: false
   httpGet:
     path: /ping
     port: 8000
@@ -256,14 +249,6 @@ readinessProbe:
   timeoutSeconds: 5
   failureThreshold: 6
   successThreshold: 1
-
-## Custom Rediness probes
-##
-customReadinessProbe: {}
-
-## Custom Liveness probes for
-##
-customLivenessProbe: {}
 
 ## Add sidecars to the  pods.
 ## Example:
@@ -291,10 +276,3 @@ postgresCheckerInit:
       -d "${SR_CELERY_WORKERS_DB_DBNAME:-socialregistrydb}"; do
       sleep 3;
     done
-
-redis:
-  cluster:
-    enabled: false
-  replicaCount: 1
-  auth:
-    enabled: false
