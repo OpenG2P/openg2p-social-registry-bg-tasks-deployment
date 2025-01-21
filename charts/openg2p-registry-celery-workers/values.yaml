@@ -1,19 +1,19 @@
 global:
-  SRBGTasksHostname: ''
+  RBGTasksHostname: ''
 
-nameOverride: openg2p-sr-bg-tasks-celery-workers
-fullnameOverride: openg2p-sr-bg-tasks-celery-workers
+nameOverride: openg2p-registry-celery-workers
+fullnameOverride: openg2p-registry-celery-workers
 
 ## Pod extra labels
 ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 ##
 podLabels:
-  app.kubernetes.io/name: openg2p-sr-bg-tasks-celery-workers
+  app.kubernetes.io/name: openg2p-registry-celery-workers
 
 ## Add labels to all the deployed resources
 ##
 commonLabels:
-  app.kubernetes.io/group: openg2p-sr-bg-tasks
+  app.kubernetes.io/group: openg2p-registry-bg-tasks
 
 ## Add annotations to all the deployed resources
 ##
@@ -42,12 +42,12 @@ serviceAccount:
   ## The name of the ServiceAccount to use.
   ## If not set and create is true, a name is generated using the fullname template
   ##
-  name: sr-celery-workers
+  name: registry-celery-workers
 
 image:
   registry: docker.io
-  repository: openg2p/openg2p-sr-celery-workers
-  tag: 1.0.1
+  repository: openg2p/openg2p-registry-celery-workers
+  tag: 1.1.0
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -183,28 +183,25 @@ volumePermissions:
     ##
 
 envVars:
-  SR_CELERY_WORKERS_DB_DBNAME: socialregistrydb
-  SR_CELERY_WORKERS_DB_USERNAME: socialregistryuser
-  SR_CELERY_WORKERS_DB_HOSTNAME: localhost
-  SR_CELERY_WORKERS_DB_PORT: 5432
-  SR_CELERY_WORKERS_CELERY_BROKER_URL: redis://{{ include "common.names.fullname" .Subcharts.redis }}-master:6379/0
-  SR_CELERY_WORKERS_CELERY_BACKEND_URL: redis://{{ include "common.names.fullname" .Subcharts.redis }}-master:6379/0
-  SR_CELERY_WORKERS_AUTH_URL: https://keycloak.openg2p.net/realms/master/protocol/openid-connect/token
-  SR_CELERY_WORKERS_AUTH_CLIENT_ID: openg2p-sr-client
-  SR_CELERY_WORKERS_AUTH_CLIENT_SECRET: ""
-  SR_CELERY_WORKERS_AUTH_GRANT_TYPE: client_credentials
-  SR_CELERY_WORKERS_MOSIP_GET_UIN_URL: https://idgenerator.sandbox.openg2p.net/v1/idgenerator/uin
-  SR_CELERY_WORKERS_MOSIP_UPDATE_UIN_URL: https://idgenerator.sandbox.openg2p.net/v1/idgenerator/uin
-  SR_CELERY_WORKERS_MAX_ID_GENERATION_REQUEST_ATTEMPTS: 3
-  SR_CELERY_WORKERS_MAX_ID_GENERATION_UPDATE_ATTEMPTS: 3
+  REGISTRY_CELERY_WORKERS_DB_DBNAME: registrydb
+  REGISTRY_CELERY_WORKERS_DB_USERNAME: registryuser
+  REGISTRY_CELERY_WORKERS_DB_HOSTNAME: localhost
+  REGISTRY_CELERY_WORKERS_DB_PORT: 5432
+  REGISTRY_CELERY_WORKERS_CELERY_BROKER_URL: redis://{{ include "common.names.fullname" .Subcharts.redis }}-master:6379/0
+  REGISTRY_CELERY_WORKERS_CELERY_BACKEND_URL: redis://{{ include "common.names.fullname" .Subcharts.redis }}-master:6379/0
+  REGISTRY_CELERY_WORKERS_AUTH_URL: https://keycloak.openg2p.net/realms/master/protocol/openid-connect/token
+  REGISTRY_CELERY_WORKERS_AUTH_CLIENT_ID: openg2p-registry-client
+  REGISTRY_CELERY_WORKERS_AUTH_CLIENT_SECRET: ""
+  REGISTRY_CELERY_WORKERS_AUTH_GRANT_TYPE: client_credentials
+  REGISTRY_CELERY_WORKERS_MOSIP_GET_UIN_URL: https://idgenerator.sandbox.openg2p.net/v1/idgenerator/uin
+  REGISTRY_CELERY_WORKERS_MOSIP_UPDATE_UIN_URL: https://idgenerator.sandbox.openg2p.net/v1/idgenerator/uin
+  REGISTRY_CELERY_WORKERS_TASK_TYPE_MAX_ATTEMPTS: '{"max_id_generation_request_attempts": 3, "max_id_generation_update_attempts": 3}'
 
 envVarsFrom:
-  SR_CELERY_WORKERS_DB_PASSWORD:
+  REGISTRY_CELERY_WORKERS_DB_PASSWORD:
     secretKeyRef:
       name: 'postgres-pod'
       key: password
-
-g2pBridgeAPIPort: ""
 
 ## ref: http://kubernetes.io/docs/user-guide/compute-postgresqlInstallationNameresources/
 ##
@@ -285,10 +282,10 @@ postgresCheckerInit:
   - '-c'
   - |
     until pg_isready \
-      -U "${SR_CELERY_WORKERS_DB_USERNAME}" \
-      -h "${SR_CELERY_WORKERS_DB_HOSTNAME}" \
-      -p "${SR_CELERY_WORKERS_DB_PORT:-5432}" \
-      -d "${SR_CELERY_WORKERS_DB_DBNAME:-socialregistrydb}"; do
+      -U "${REGISTRY_CELERY_WORKERS_DB_USERNAME}" \
+      -h "${REGISTRY_CELERY_WORKERS_DB_HOSTNAME}" \
+      -p "${REGISTRY_CELERY_WORKERS_DB_PORT:-5432}" \
+      -d "${REGISTRY_CELERY_WORKERS_DB_DBNAME:-registrydb}"; do
       sleep 3;
     done
 

@@ -1,8 +1,8 @@
 apiVersion: v2
-name: openg2p-sr-bg-tasks-celery-beat-producers
-description: A Helm chart for OpenG2P SR Celery Beat Producers
+name: openg2p-registry-celery-workers
+description: A Helm chart for OpenG2P Registry Celery Workers
 type: application
-version: 1.0.1
+version: 1.1.0
 appVersion: ""
 dependencies:
 - name: common
@@ -13,10 +13,10 @@ dependencies:
   version: 20.x.x
   condition: redis.enabled
 keywords:
-  - openg2p-sr-bg-tasks-celery-beat-producers
+  - openg2p-registry-celery-workers
 maintainers:
   - email: info@openg2p.org
     name: OpenG2P
 icon: https://openg2p.github.io/openg2p-helm/openg2p-logo.png
 annotations:
-  catalog.cattle.io/display-name: "OpenG2P-SR-BG-Tasks-Celery-Beat-Producers"
+  catalog.cattle.io/display-name: "OpenG2P-Registry-Celery-Workers"

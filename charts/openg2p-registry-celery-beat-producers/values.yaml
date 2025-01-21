@@ -1,19 +1,19 @@
 global:
-  SRBGTasksHostname: ''
+  RBGTasksHostname: ''
 
-nameOverride: openg2p-sr-bg-tasks-celery-beat-producers
-fullnameOverride: openg2p-sr-bg-tasks-celery-beat-producers
+nameOverride: openg2p-registry-celery-beat-producers
+fullnameOverride: openg2p-registry-celery-beat-producers
 
 ## Pod extra labels
 ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 ##
 podLabels:
-  app.kubernetes.io/name: openg2p-sr-bg-tasks-celery-beat-producers
+  app.kubernetes.io/name: openg2p-registry-celery-beat-producers
 
 ## Add labels to all the deployed resources
 ##
 commonLabels:
-  app.kubernetes.io/group: openg2p-sr-bg-tasks
+  app.kubernetes.io/group: openg2p-registry-bg-tasks
 
 ## Add annotations to all the deployed resources
 ##
@@ -42,12 +42,12 @@ serviceAccount:
   ## The name of the ServiceAccount to use.
   ## If not set and create is true, a name is generated using the fullname template
   ##
-  name: openg2p-sr-bg-tasks-celery-beat-producers
+  name: openg2p-registry-celery-beat-producers
 
 image:
   registry: docker.io
-  repository: openg2p/openg2p-openg2p-sr-celery-beat-producers
-  tag: 1.0.1
+  repository: openg2p/openg2p-openg2p-registry-celery-beat-producers
+  tag: 1.1.0
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -183,24 +183,22 @@ volumePermissions:
     ##
 
 envVars:
-  SR_CELERY_BEAT_DB_DBNAME: socialregisrydb
-  SR_CELERY_BEAT_DB_PORT: 5432
-  SR_CELERY_BEAT_DB_USERNAME: socialregistryuser
-  SR_CELERY_BEAT_DB_HOSTNAME: 'localhost'
-  SR_CELERY_BEAT_CELERY_BROKER_URL: redis://{{ include "common.names.fullname" .Subcharts.redis }}-master:6379/0
-  SR_CELERY_BEAT_CELERY_BACKEND_URL: redis://{{ include "common.names.fullname" .Subcharts.redis }}-master:6379/0
-  SR_CELERY_BEAT_CELERY_MAX_ID_GENERATION_REQUEST_ATTEMPTS: 3
-  SR_CELERY_BEAT_CELERY_MAX_ID_GENERATION_UPDATE_ATTEMPTS: 3
-  SR_CELERY_BEAT_CELERY_RES_PARTNER_ID_GENERATION_FREQUENCY: 10
-  SR_CELERY_BEAT_CELERY_RES_PARTNER_ID_UPDATE_FREQUENCY: 10
+  REGISTRY_CELERY_BEAT_DB_DBNAME: regiregistryydb
+  REGISTRY_CELERY_BEAT_DB_PORT: 5432
+  REGISTRY_CELERY_BEAT_DB_USERNAME: postgres
+  REGISTRY_CELERY_BEAT_DB_HOSTNAME: 'localhost'
+  REGISTRY_CELERY_BEAT_CELERY_BROKER_URL: redis://{{ include "common.names.fullname" .Subcharts.redis }}-master:6379/0
+  REGISTRY_CELERY_BEAT_CELERY_BACKEND_URL: redis://{{ include "common.names.fullname" .Subcharts.redis }}-master:6379/0
+  REGISTRY_CELERY_BEAT_CELERY_MAX_ID_GENERATION_REQUEST_ATTEMPTS: 3
+  REGISTRY_CELERY_BEAT_CELERY_MAX_ID_GENERATION_UPDATE_ATTEMPTS: 3
+  REGISTRY_CELERY_BEAT_TASK_TYPE_MAX_ATTEMPTS: '{"max_id_generation_request_attempts":3,"max_id_generation_update_attempts":3}'
 
 envVarsFrom:
-  SR_CELERY_BEAT_DB_PASSWORD:
+  REGISTRY_CELERY_BEAT_DB_PASSWORD:
     secretKeyRef:
       name: 'postgres-pod'
       key: password
 
-g2pBridgeAPIPort: ""
 
 ## ref: http://kubernetes.io/docs/user-guide/compute-postgresqlInstallationNameresources/
 ##
@@ -279,9 +277,8 @@ postgresCheckerInit:
   command:
   - 'sh'
   - '-c'
-  - 'until pg_isready -U ${SR_CELERY_BEAT_DB_USERNAME} -h ${SR_CELERY_BEAT_DB_HOSTNAME} -p ${SR_CELERY_BEAT_DB_PORT:-5432} -d ${SR_CELERY_BEAT_DB_DBNAME:-socialregistrydb}; do sleep 3; done'
-
-redis:
+  - 'until pg_isready -U ${REGISTRY_CELERY_BEAT_DB_USERNAME} -h ${REGISTRY_CELERY_BEAT_DB_HOSTNAME} -p ${REGISTRY_CELERY_BEAT_DB_PORT:-5432} -d ${REGISTRY_CELERY_BEAT_DB_DBNAME:-registrydb}; do sleep 3; done'
+  redis:
   cluster:
     enabled: false
   replicaCount: 1

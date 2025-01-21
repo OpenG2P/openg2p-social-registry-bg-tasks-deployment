@@ -17,12 +17,12 @@ spec:
   template:
     metadata:
       {{- if .Values.podAnnotations }}
-      annotations: {{- include "g2p-sr-bg.podAnnotations" . | nindent 8 }}
+      annotations: {{- include "g2p-registry-bg.podAnnotations" . | nindent 8 }}
       {{- end }}
       labels: {{- include "common.labels.standard" (dict "customLabels" .Values.podLabels "context" $) | nindent 8 }}
     spec:
-      serviceAccountName: {{ template "g2p-sr-bg.serviceAccountName" . }}
-      {{- include "g2p-sr-bg.imagePullSecrets" . | nindent 6 }}
+      serviceAccountName: {{ template "g2p-registry-bg.serviceAccountName" . }}
+      {{- include "g2p-registry-bg.imagePullSecrets" . | nindent 6 }}
       hostAliases: {{- include "common.tplvalues.render" (dict "value" .Values.hostAliases "context" $) | nindent 8 }}
       {{- if .Values.affinity }}
       affinity: {{- include "common.tplvalues.render" ( dict "value" .Values.affinity "context" $) | nindent 8 }}
@@ -44,14 +44,14 @@ spec:
         image: {{ .Values.postgresCheckerInit.image }}
         command:
           {{- toYaml .Values.postgresCheckerInit.command | nindent 12 }}
-        env: {{- include "g2p-sr-bg.envVars" . | nindent 12 }}
+        env: {{- include "g2p-registry-bg.envVars" . | nindent 12 }}
       {{- end }}
       containers:
-        - name: g2p-sr-bg
-          image: {{ template "g2p-sr-bg.image" . }}
+        - name: g2p-registry-bg
+          image: {{ template "g2p-registry-bg.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            {{- include "g2p-sr-bg.envVars" . | nindent 12 }}
+            {{- include "g2p-registry-bg.envVars" . | nindent 12 }}
           resources: {{- if .Values.resources }}
           {{- toYaml .Values.resources | nindent 12 }}
           {{- end }}
@@ -62,7 +62,7 @@ spec:
           {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           {{- if .Values.probes }}
-          probes: {{- include "g2p-sr-bg.probes" . | nindent 12 }}
+          probes: {{- include "g2p-registry-bg.probes" . | nindent 12 }}
           {{- end }}
         {{- if .Values.sidecars }}
         {{- include "common.tplvalues.render" ( dict "value" .Values.sidecars "context" $) | nindent 8 }}
