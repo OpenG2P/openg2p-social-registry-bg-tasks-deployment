@@ -1,71 +1,256 @@
 global:
-  keycloakBaseUrl: https://keycloak.openg2p.net
+  keycloakBaseUrl: https://keycloak.openg2p.sandbox.net
   keycloakIssuerUrl: '{{ tpl .Values.global.keycloakBaseUrl $ }}/realms/master'
-  RBGTasksHostname: registry-bg-tasks.openg2p.sandbox.net
 
-openg2p-registry-celery-beat-producers:
+## Add labels to all the deployed resources
+##
+commonLabels: {}
+
+## Add annotations to all the deployed resources
+##
+commonAnnotations: {}
+
+commonEnvVars: {}
+commonEnvVarsFrom: {}
+
+## Specifies whether a ServiceAccount should be created
+##
+serviceAccount:
+  create: true
+  ## The name of the ServiceAccount to use.
+  ## If not set and create is true, a name is generated using the fullname template
+  ##
+  name: ''
+
+producer:
   enabled: true
+
+  replicaCount: 1
+
+  podLabels:
+    app.kubernetes.io/name: '{{ include "common.names.name" . }}-producer'
+  podAnnotations: {}
+
+  updateStrategy:
+    type: RollingUpdate
+
   image:
     registry: docker.io
-    repository: openg2p/openg2p-registry-celery-beat-producers
-    tag: '1.1.0'
-  common:
+    repository: openg2p/openg2p-registry-bg-tasks-producer
+    tag: "1.1"
+    pullPolicy: Always
+    # pullSecrets:
+    #   - myRegistryKeySecretName
+
+  hostAliases: []
+  affinity: {}
+  podAffinityPreset: ""
+  podAntiAffinityPreset: soft
+  nodeAffinityPreset:
+    type: ""
+    key: ""
+    values: []
+  nodeSelector: {}
+  tolerations: []
+  # priorityClassName: ""
+  podSecurityContext:
     enabled: false
-  redis:
+    fsGroup: 1001
+  initContainers: []
+  lifecycleHooks: {}
+  containerSecurityContext:
     enabled: false
+    runAsUser: 1001
+    runAsNonRoot: true
+
+  resources: {}
+
+  startupProbe:
+    enabled: true
+    httpGet:
+      path: /ping
+      port: 8000
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 30
+    successThreshold: 1
+
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: /ping
+      port: 8000
+    initialDelaySeconds: 20
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    httpGet:
+      path: /ping
+      port: 8000
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
+  sidecars: []
+
   envVars:
-    REGISTRY_CELERY_BEAT_DB_DBNAME: socialregistrydb
+    REGISTRY_CELERY_BEAT_DB_HOSTNAME: '{{ tpl .Values.postgresqlInstallationName $ }}'
     REGISTRY_CELERY_BEAT_DB_PORT: 5432
-    REGISTRY_CELERY_BEAT_DB_USERNAME: postgres
-    REGISTRY_CELERY_BEAT_DB_HOSTNAME: 'social-registry-postgresql'
-    REGISTRY_CELERY_BEAT_CELERY_BROKER_URL: redis://{{ .Release.Name }}-redis-master:6379/0
-    REGISTRY_CELERY_BEAT_CELERY_BACKEND_URL: redis://{{ .Release.Name }}-redis-master:6379/0
+    REGISTRY_CELERY_BEAT_DB_DBNAME: socialregistrydb
+    REGISTRY_CELERY_BEAT_DB_USERNAME: sruser
+
+    REGISTRY_CELERY_BEAT_CELERY_BROKER_URL: redis://{{ tpl .Values.redisInstallationName $ }}:6379/0
+    REGISTRY_CELERY_BEAT_CELERY_BACKEND_URL: redis://{{ tpl .Values.redisInstallationName $ }}:6379/0
+
     REGISTRY_CELERY_BEAT_WORKER_TYPE_MAX_ATTEMPTS: '{"max_id_generation_request_attempts": 4, "max_id_generation_update_attempts": 4}'
 
+    REGISTRY_CELERY_BEAT_REGISTRY_BEAT_PRODUCER_FREQUENCY: 60
 
   envVarsFrom:
     REGISTRY_CELERY_BEAT_DB_PASSWORD:
       secretKeyRef:
-        name: 'social-registry-postgresql'
-        key: postgres-password
+        name: '{{ tpl .Values.postgresqlInstallationName $ }}'
+        key: password
 
-openg2p-registry-celery-workers:
+  postgresCheckerInit:
+    enabled: true
+    image: jbergknoff/postgresql-client
+    command:
+    - 'sh'
+    - '-c'
+    - |
+      until pg_isready \
+        -U "${REGISTRY_CELERY_BEAT_DB_USERNAME}" \
+        -h "${REGISTRY_CELERY_BEAT_DB_HOSTNAME}" \
+        -p "${REGISTRY_CELERY_BEAT_DB_PORT:-5432}" \
+        -d "${REGISTRY_CELERY_BEAT_DB_DBNAME:-socialregistrydb}"; do
+        sleep 3;
+      done
+
+worker:
   enabled: true
+
+  replicaCount: 1
+
+  podLabels:
+    app.kubernetes.io/name: '{{ include "common.names.name" . }}-worker'
+  podAnnotations: {}
+
+  updateStrategy:
+    type: RollingUpdate
+
   image:
     registry: docker.io
-    repository: openg2p/openg2p-registry-celery-workers
-    tag: '1.1.0'
-  common:
+    repository: openg2p/openg2p-registry-bg-tasks-worker
+    tag: "1.1"
+    pullPolicy: Always
+    # pullSecrets:
+    #   - myRegistryKeySecretName
+
+  hostAliases: []
+  affinity: {}
+  podAffinityPreset: ""
+  podAntiAffinityPreset: soft
+  nodeAffinityPreset:
+    type: ""
+    key: ""
+    values: []
+  nodeSelector: {}
+  tolerations: []
+  # priorityClassName: ""
+  podSecurityContext:
     enabled: false
-  redis:
+    fsGroup: 1001
+  initContainers: []
+  lifecycleHooks: {}
+  containerSecurityContext:
     enabled: false
+    runAsUser: 1001
+    runAsNonRoot: true
+
+  resources: {}
+
+  startupProbe:
+    enabled: true
+    httpGet:
+      path: /ping
+      port: 8000
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 30
+    successThreshold: 1
+
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: /ping
+      port: 8000
+    initialDelaySeconds: 20
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    httpGet:
+      path: /ping
+      port: 8000
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
+  sidecars: []
+
   envVars:
-    REGISTRY_CELERY_WORKERS_DB_DBNAME: socialregistrydb
-    REGISTRY_CELERY_WORKERS_DB_USERNAME: postgres
-    REGISTRY_CELERY_WORKERS_DB_HOSTNAME: 'social-registry-postgresql'
+    REGISTRY_CELERY_WORKERS_DB_HOSTNAME: '{{ tpl .Values.postgresqlInstallationName $ }}'
     REGISTRY_CELERY_WORKERS_DB_PORT: 5432
-    REGISTRY_CELERY_WORKERS_CELERY_BROKER_URL: redis://{{ .Release.Name }}-redis-master:6379/0
-    REGISTRY_CELERY_WORKERS_CELERY_BACKEND_URL: redis://{{ .Release.Name }}-redis-master:6379/0
+    REGISTRY_CELERY_WORKERS_DB_DBNAME: socialregistrydb
+    REGISTRY_CELERY_WORKERS_DB_USERNAME: sruser
+
+    REGISTRY_CELERY_WORKERS_CELERY_BROKER_URL: redis://{{ tpl .Values.redisInstallationName $ }}:6379/0
+    REGISTRY_CELERY_WORKERS_CELERY_BACKEND_URL: redis://{{ tpl .Values.redisInstallationName $ }}:6379/0
+
     REGISTRY_CELERY_WORKERS_AUTH_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/protocol/openid-connect/token'
-    REGISTRY_CELERY_WORKERS_AUTH_CLIENT_ID: 'client-id'
-    REGISTRY_CELERY_WORKERS_AUTH_CLIENT_SECRET: 'secret'
-    REGISTRY_CELERY_WORKERS_AUTH_GRANT_TYPE: client_credentials
-    REGISTRY_CELERY_WORKERS_MOSIP_GET_UIN_URL: https://idgenerator.dev.openg2p.net/v1/idgenerator/uin
-    REGISTRY_CELERY_WORKERS_MOSIP_UPDATE_UIN_URL: https://idgenerator.dev.openg2p.net/v1/idgenerator/uin
+    REGISTRY_CELERY_WORKERS_AUTH_CLIENT_ID: 'openg2p-sr-{{ .Release.Namespace }}'
+    REGISTRY_CELERY_WORKERS_AUTH_CLIENT_SECRET: ''
+
+    REGISTRY_CELERY_WORKERS_MOSIP_GET_UIN_URL: 'http://{{ tpl .Values.idgeneratorInstallationName $ }}/v1/idgenerator/uin'
+    REGISTRY_CELERY_WORKERS_MOSIP_UPDATE_UIN_URL: 'http://{{ tpl .Values.idgeneratorInstallationName $ }}/v1/idgenerator/uin'
+
     REGISTRY_CELERY_WORKERS_WORKER_TYPE_MAX_ATTEMPTS: '{"max_id_generation_request_attempts": 4, "max_id_generation_update_attempts": 4}'
 
   envVarsFrom:
     REGISTRY_CELERY_WORKERS_DB_PASSWORD:
       secretKeyRef:
-        name: 'social-registry-postgresql'
-        key: postgres-password
+        name: '{{ tpl .Values.postgresqlInstallationName $ }}'
+        key: password
 
-redis:
-  enabled: true
-  architecture: standalone
-  master:
-    persistence:
-      enabled: false
-  auth:
-    enabled: false
+  postgresCheckerInit:
+    enabled: true
+    image: jbergknoff/postgresql-client
+    command:
+    - 'sh'
+    - '-c'
+    - |
+      until pg_isready \
+        -U "${REGISTRY_CELERY_WORKERS_DB_USERNAME}" \
+        -h "${REGISTRY_CELERY_WORKERS_DB_HOSTNAME}" \
+        -p "${REGISTRY_CELERY_WORKERS_DB_PORT:-5432}" \
+        -d "${REGISTRY_CELERY_WORKERS_DB_DBNAME:-socialregistrydb}"; do
+        sleep 3;
+      done
 
+postgresqlInstallationName: '{{ .Release.Name }}-postgresql'
+redisInstallationName: '{{ .Release.Name }}-redis-master'
+idgeneratorInstallationName: '{{ .Release.Name }}-idgenerator'

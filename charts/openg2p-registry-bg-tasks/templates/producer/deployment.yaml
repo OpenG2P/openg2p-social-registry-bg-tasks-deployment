@@ -1,0 +1,78 @@
+{{- if .Values.producer.enabled }}
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" . }}-producer
+  labels: {{- include "common.labels.standard" (dict "customLabels" .Values.commonLabels "context" $) | nindent 4 }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.producer.replicaCount }}
+  {{- if .Values.producer.updateStrategy }}
+  strategy: {{- toYaml .Values.producer.updateStrategy | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" (dict "customLabels" .Values.producer.podLabels "context" $) | nindent 6 }}
+  template:
+    metadata:
+      {{- if .Values.producer.podAnnotations }}
+      annotations: {{- include "common.tplvalues.render" (dict "value" .Values.producer.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
+      labels: {{- include "common.labels.standard" (dict "customLabels" .Values.producer.podLabels "context" $) | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "registry-bg-tasks.serviceAccountName" . }}
+      {{- include "registry-bg-tasks.imagePullSecrets" . | nindent 6 }}
+      hostAliases: {{- include "common.tplvalues.render" (dict "value" .Values.producer.hostAliases "context" $) | nindent 8 }}
+      {{- if .Values.producer.affinity }}
+      affinity: {{- include "common.tplvalues.render" ( dict "value" .Values.producer.affinity "context" $) | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAffinity: {{- include "common.affinities.pods" (dict "type" .Values.producer.podAffinityPreset "context" $) | nindent 10 }}
+        podAntiAffinity: {{- include "common.affinities.pods" (dict "type" .Values.producer.podAntiAffinityPreset "context" $) | nindent 10 }}
+        nodeAffinity: {{- include "common.affinities.nodes" (dict "type" .Values.producer.nodeAffinityPreset.type "key" .Values.producer.nodeAffinityPreset.key "values" .Values.producer.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      nodeSelector: {{- include "common.tplvalues.render" ( dict "value" .Values.producer.nodeSelector "context" $) | nindent 8 }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.producer.tolerations "context" .) | nindent 8 }}
+      priorityClassName: {{ .Values.producer.priorityClassName | quote }}
+      {{- if .Values.producer.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.producer.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      initContainers:
+      {{- if .Values.producer.postgresCheckerInit.enabled }}
+      - name: postgres-checker
+        image: {{ .Values.producer.postgresCheckerInit.image }}
+        command:
+          {{- toYaml .Values.producer.postgresCheckerInit.command | nindent 12 }}
+        env: {{- include "registry-bg-tasks.producer.envVars" . | nindent 12 }}
+      {{- end }}
+      {{- if .Values.producer.initContainers }}
+      {{- include "common.tplvalues.render" (dict "value" .Values.producer.initContainers "context" $) | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: registry-bg-tasks-producer
+          image: {{ include "common.images.image" (dict "imageRoot" .Values.producer.image "global" .Values.producer.global) }}
+          imagePullPolicy: {{ .Values.producer.image.pullPolicy }}
+          env: {{- include "registry-bg-tasks.producer.envVars" . | nindent 12 }}
+          {{- if .Values.producer.resources }}
+          resources: {{- toYaml .Values.producer.resources | nindent 12 }}
+          {{- end }}
+          {{- if .Values.producer.lifecycleHooks }}
+          lifecycle: {{- include "common.tplvalues.render" (dict "value" .Values.producer.lifecycleHooks "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.producer.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.producer.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.producer.startupProbe.enabled }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.producer.startupProbe "enabled") "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.producer.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.producer.livenessProbe "enabled") "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.producer.readinessProbe.enabled }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.producer.readinessProbe "enabled") "context" $) | nindent 12 }}
+          {{- end }}
+        {{- if .Values.producer.sidecars }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.producer.sidecars "context" $) | nindent 8 }}
+        {{- end }}
+{{- end }}
