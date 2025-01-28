@@ -1,3 +1,3 @@
-# OpenG2P Registry BG Tasks Helm Chart
+# OpenG2P Registry Background Tasks Helm Chart
 
-Helm Chart of OpenG2P Registry BG Tasks
+Helm Chart of OpenG2P Registry Background Tasks

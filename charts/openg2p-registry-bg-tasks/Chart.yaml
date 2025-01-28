@@ -1,31 +1,17 @@
 apiVersion: v2
 name: openg2p-registry-bg-tasks
-description: A Helm chart for OpenG2P Registry BG Tasks
+description: A Helm chart for OpenG2P Registry Background Tasks
 type: application
-version: 1.1.0
-appVersion: ""
+version: 1.1.0-develop
 dependencies:
 - name: common
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 2.x.x
-  condition: common.enabled
-- name: redis
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 20.x.x
-  condition: redis.enabled
-- name: openg2p-registry-celery-beat-producers
-  version: 1.1.0
-  condition: openg2p-registry-celery-beat-producers.enabled
-- name: openg2p-registry-celery-workers
-  version: 1.1.0
-  condition: openg2p-registry-celery-workers.enabled
 keywords:
-  - openg2p-registry
+  - openg2p-registry-bg-tasks
 maintainers:
   - email: info@openg2p.org
     name: OpenG2P
 icon: https://openg2p.github.io/openg2p-helm/openg2p-logo.png
 annotations:
-  catalog.cattle.io/display-name: "OpenG2P-Registry-BG-Tasks"
-  openg2p.org/add-to-rancher: ""
-
+  catalog.cattle.io/display-name: "OpenG2P Registry Background Tasks"
