@@ -108,11 +108,6 @@ producer:
 
     REGISTRY_CELERY_BEAT_CELERY_BROKER_URL: redis://{{ tpl .Values.redisInstallationName $ }}:6379/0
     REGISTRY_CELERY_BEAT_CELERY_BACKEND_URL: redis://{{ tpl .Values.redisInstallationName $ }}:6379/0
-
-    REGISTRY_CELERY_BEAT_WORKER_TYPE_MAX_ATTEMPTS: '{"max_id_generation_request_attempts": 4, "max_id_generation_update_attempts": 4}'
-
-    REGISTRY_CELERY_BEAT_REGISTRY_BEAT_PRODUCER_FREQUENCY: 60
-
   envVarsFrom:
     REGISTRY_CELERY_BEAT_DB_PASSWORD:
       secretKeyRef:
@@ -227,9 +222,6 @@ worker:
 
     REGISTRY_CELERY_WORKERS_MOSIP_GET_UIN_URL: 'http://{{ tpl .Values.idgeneratorInstallationName $ }}/v1/idgenerator/uin'
     REGISTRY_CELERY_WORKERS_MOSIP_UPDATE_UIN_URL: 'http://{{ tpl .Values.idgeneratorInstallationName $ }}/v1/idgenerator/uin'
-
-    REGISTRY_CELERY_WORKERS_WORKER_TYPE_MAX_ATTEMPTS: '{"max_id_generation_request_attempts": 4, "max_id_generation_update_attempts": 4}'
-
   envVarsFrom:
     REGISTRY_CELERY_WORKERS_DB_PASSWORD:
       secretKeyRef:
