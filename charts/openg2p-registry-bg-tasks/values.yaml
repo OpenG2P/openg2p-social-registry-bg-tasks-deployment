@@ -116,7 +116,9 @@ producer:
 
   postgresCheckerInit:
     enabled: true
-    image: jbergknoff/postgresql-client
+    image:
+      repository: jbergknoff/postgresql-client
+      tag: latest
     command:
     - 'sh'
     - '-c'
@@ -230,7 +232,9 @@ worker:
 
   postgresCheckerInit:
     enabled: true
-    image: jbergknoff/postgresql-client
+    image:
+      repository: jbergknoff/postgresql-client
+      tag: latest
     command:
     - 'sh'
     - '-c'
