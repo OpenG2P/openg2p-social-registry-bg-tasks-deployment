@@ -41,7 +41,7 @@ spec:
       initContainers:
       {{- if .Values.producer.postgresCheckerInit.enabled }}
       - name: postgres-checker
-        image: {{ .Values.producer.postgresCheckerInit.image }}
+        image: {{ include "common.images.image" (dict "imageRoot" .Values.producer.postgresCheckerInit.image "global" .Values.global) }}
         command:
           {{- toYaml .Values.producer.postgresCheckerInit.command | nindent 12 }}
         env: {{- include "registry-bg-tasks.producer.envVars" . | nindent 12 }}
@@ -51,7 +51,7 @@ spec:
       {{- end }}
       containers:
         - name: registry-bg-tasks-producer
-          image: {{ include "common.images.image" (dict "imageRoot" .Values.producer.image "global" .Values.producer.global) }}
+          image: {{ include "common.images.image" (dict "imageRoot" .Values.producer.image "global" .Values.global) }}
           imagePullPolicy: {{ .Values.producer.image.pullPolicy }}
           env: {{- include "registry-bg-tasks.producer.envVars" . | nindent 12 }}
           {{- if .Values.producer.resources }}
